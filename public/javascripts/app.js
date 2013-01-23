@@ -83,12 +83,16 @@ window.require.register("application", function(exports, require, module) {
   // Application bootstrapper.
   Application = {
     initialize: function() {
+      var LayoutView = require('views/layout_view');
       var HomeView = require('views/home_view');
+      var AboutView = require('views/about_view');
       var Router = require('lib/router');
       // Ideally, initialized classes should be kept in controllers & mediator.
       // If you're making big webapp, here's more sophisticated skeleton
       // https://github.com/paulmillr/brunch-with-chaplin
-      this.homeView = new HomeView();
+      this.layoutView = new LayoutView();
+      this.homeView = new HomeView();    
+      this.aboutView = new AboutView();
       this.router = new Router();
       if (typeof Object.freeze === 'function') Object.freeze(this);
     }
@@ -111,12 +115,27 @@ window.require.register("lib/router", function(exports, require, module) {
 
   module.exports = Backbone.Router.extend({
     routes: {
-      '': 'home'
+      '': 'home',
+      'about': 'about'
     },
 
     home: function() {
-      $('body').html(application.homeView.render().el);
+      if($('body #navigation').length == 0) {
+        $('body').append(application.layoutView.render().el);  
+      }
+      this._fadeTransition(application.homeView);
+    },
+
+    about: function() {    
+      this._fadeTransition(application.aboutView);
+    },
+
+    _fadeTransition: function(view) {
+      $('#content').fadeOut(100, function() {
+        $('#content').html(view.render().el).fadeIn();  
+      });
     }
+
   });
   
 });
@@ -138,15 +157,54 @@ window.require.register("models/model", function(exports, require, module) {
   });
   
 });
+window.require.register("views/about_view", function(exports, require, module) {
+  var View = require('./view');
+  var template = require('./templates/about');
+
+  module.exports = View.extend({
+    id: 'about-view',
+    template: template
+  });
+  
+});
 window.require.register("views/home_view", function(exports, require, module) {
   var View = require('./view');
   var template = require('./templates/home');
 
   module.exports = View.extend({
     id: 'home-view',
+    template: template,
+
+    events: {
+      "click #about-1": "nextClicked"
+    },
+   
+    nextClicked: function(e){
+      e.preventDefault();
+      // this.trigger("next")    
+      Backbone.history.navigate("about", {trigger: true});
+    } 
+
+  });
+  
+});
+window.require.register("views/layout_view", function(exports, require, module) {
+  var View = require('./view');
+  var template = require('./templates/layout');
+
+  module.exports = View.extend({
+    id: 'layout-view',
     template: template
   });
   
+});
+window.require.register("views/templates/about", function(exports, require, module) {
+  module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+    helpers = helpers || Handlebars.helpers;
+    var foundHelper, self=this;
+
+
+    return "<div class=\"container\" id=\"content\">\n	<p>\n	  test 1\n	</p> \n</div>";});
 });
 window.require.register("views/templates/home", function(exports, require, module) {
   module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
@@ -154,7 +212,15 @@ window.require.register("views/templates/home", function(exports, require, modul
     var foundHelper, self=this;
 
 
-    return "<div id=\"content\">\n  <h1>brunch</h1>\n  <h2>Welcome!</h2>\n  <ul>\n    <li><a href=\"http://brunch.readthedocs.org/\">Documentation</a></li>\n    <li><a href=\"https://github.com/brunch/brunch/issues\">Github Issues</a></li>\n    <li><a href=\"https://github.com/brunch/twitter\">Twitter Example App</a></li>\n    <li><a href=\"https://github.com/brunch/todos\">Todos Example App</a></li>\n  </ul>\n</div>\n";});
+    return "<div class=\"container\">\n	<p>\n	  <button class=\"btn btn-large btn-info\" type=\"button\">\n	  	<i class=\"icon-user icon-white\"></i> Connect to FourSquare\n	  </button>\n	</p>\n\n	<div class=\"btn-group\">\n	  <a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">\n	    Action\n	    <span class=\"caret\"></span>\n	  </a>\n	  <ul class=\"dropdown-menu\" role=\"menu\" aria-labelledby=\"dLabel\">\n	    <li><a tabindex=\"-1\" href=\"#\">Action</a></li>\n	    <li><a tabindex=\"-1\" href=\"#\">Another action</a></li>\n	    <li><a tabindex=\"-1\" href=\"#\">Something else here</a></li>\n	    <li class=\"divider\"></li>\n	    <li><a tabindex=\"-1\" href=\"#\">Separated link</a></li>\n	  </ul>\n	</div>\n</div>";});
+});
+window.require.register("views/templates/layout", function(exports, require, module) {
+  module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+    helpers = helpers || Handlebars.helpers;
+    var foundHelper, self=this;
+
+
+    return "<div class=\"container\" id=\"navigation\">\n	<ul class=\"nav nav-tabs\">\n	  <li class=\"active\">\n	    <a href=\"#\">Home</a>\n	  </li>\n	  <li><a href=\"#about\">About</a></li>\n	  <li><a href=\"#help\">Help</a></li>\n	  <li class=\"dropdown\">\n	    <a class=\"dropdown-toggle\"\n	       data-toggle=\"dropdown\"\n	       href=\"#\">\n	        Dropdown\n	        <b class=\"caret\"></b>\n	      </a>\n	    <ul class=\"dropdown-menu\">\n		    <li><a tabindex=\"-1\" href=\"#\">Action</a></li>\n		    <li><a tabindex=\"-1\" href=\"#\">Another action</a></li>\n		    <li><a tabindex=\"-1\" href=\"#\">Something else here</a></li>\n		    <li class=\"divider\"></li>\n		    <li><a tabindex=\"-1\" href=\"#\">Separated link</a></li>\n	    </ul>\n	  </li>\n	</ul>\n</div>\n<div id=\"content\"></div>";});
 });
 window.require.register("views/view", function(exports, require, module) {
   require('lib/view_helper');
