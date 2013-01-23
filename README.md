@@ -11,3 +11,7 @@ This is a rebuild using brunch.io
 A test version of the app will be available on Heroku
 http://fourdrinks2.herokuapp.com/
 
+## Run local server
+* Go to project root
+* Run: brunch watch --server
+* Go to: http://localhost:3333/
